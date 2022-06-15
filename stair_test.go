@@ -14,7 +14,7 @@ func TestNewStair(t *testing.T) {
 	fmt.Printf("%t \n", st.AddBlock(1, Block{Value: gofloat.ToFloat(10, 2)}))
 	fmt.Printf("%t \n", st.AddBlock(3, Block{Value: gofloat.ToFloat(100, 2)}))
 	fmt.Printf("%t \n", st.AddBlock(4, Block{Value: gofloat.ToFloat(10, 2)}))
-	st.PositionBlock(Block{Value: gofloat.ToFloat(-80, 2)})
+	fmt.Printf("%t \n", st.PositionBlock(Block{Value: gofloat.ToFloat(-80, 2)}))
 	fmt.Printf("%t \n", st.AddBlock(3, Block{Value: gofloat.ToFloat(-20, 2)}))
 }
 
