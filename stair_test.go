@@ -1,6 +1,7 @@
 package number_stairs
 
 import (
+	"fmt"
 	"github.com/senpathi/gofloat"
 	"testing"
 )
@@ -22,7 +23,7 @@ func TestNewStairMargin(t *testing.T) {
 
 func TestStair_AddBlock(t *testing.T) {
 	tests := map[string]struct {
-		step    int64
+		step    uint64
 		value   float64
 		invalid bool
 	}{
@@ -53,7 +54,7 @@ func TestStair_AddBlock(t *testing.T) {
 
 func TestStair_PositionBlock(t *testing.T) {
 	tests := map[string]struct {
-		step    int64
+		step    uint64
 		value   float64
 		invalid bool
 	}{
@@ -79,5 +80,24 @@ func TestStair_PositionBlock(t *testing.T) {
 				t.Errorf("block position fail")
 			}
 		})
+	}
+}
+
+func TestName(t *testing.T) {
+	st := NewStair()
+	var step uint64 = 1
+	// add three steps
+	st.AddStep(step)
+	st.AddStep(step + 2)
+	st.AddStep(step + 4)
+
+	st.AddBlock(step, NewBlock(`block-1`, gofloat.ToFloat(20, 2)))
+	st.AddBlock(step+2, NewBlock(`block-2`, gofloat.ToFloat(20, 2)))
+	st.AddBlock(step+4, NewBlock(`block-3`, gofloat.ToFloat(20, 2)))
+
+	// block position in block-2
+	if st.PositionBlock(NewBlock(`position`, gofloat.ToFloat(-10, 2)), Offset(6)) {
+		// print block-2
+		fmt.Println(st.Steps[step].Inputs[0].ID)
 	}
 }

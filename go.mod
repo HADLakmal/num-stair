@@ -1,4 +1,4 @@
-module github.com/HADLakmal/number-stairs
+module github.com/HADLakmal/num-stair
 
 go 1.17
 

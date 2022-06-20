@@ -3,7 +3,7 @@ package number_stairs
 import "github.com/senpathi/gofloat"
 
 type Step struct {
-	ID             int64
+	ID             uint64
 	Inputs         []Block
 	Next, Previous *Step
 	Handrail       *Handrail
@@ -15,32 +15,39 @@ type Block struct {
 	Value gofloat.Float
 }
 
+func NewBlock(ID string, value gofloat.Float) Block {
+	return Block{
+		ID:    ID,
+		Value: value,
+	}
+}
+
 type Handrail struct {
 	Height gofloat.Float
 }
 
 type Stair struct {
 	End   *Step
-	Steps map[int64]*Step
+	Steps map[uint64]*Step
 	StairOptions
 }
 
 func NewStair(options ...StairOption) *Stair {
 	stair := &Stair{
-		Steps: make(map[int64]*Step),
+		Steps: make(map[uint64]*Step),
 	}
 	stair.StairOptions.apply(options...)
 
 	return stair
 }
 
-func (s *Stair) AddStep(name int64) bool {
+func (s *Stair) AddStep(name uint64) bool {
 	step := &Step{
 		ID:       name,
 		Inputs:   *new([]Block),
 		Handrail: new(Handrail),
 	}
-	if _, ok := s.Steps[name]; ok {
+	if _, ok := s.Steps[name]; ok || name <= 0 {
 		return false
 	}
 	s.Steps[name] = step
@@ -57,7 +64,7 @@ func (s *Stair) AddStep(name int64) bool {
 	return true
 }
 
-func (s *Stair) AddBlock(stepName int64, block Block) bool {
+func (s *Stair) AddBlock(stepName uint64, block Block) bool {
 	if st, ok := s.Steps[stepName]; !ok {
 		return ok
 	} else {
@@ -105,11 +112,11 @@ func fitBlock(step *Step, block Block, margin float64) {
 }
 
 type Options struct {
-	offset int64
+	offset uint64
 }
 type Option func(*Options)
 
-func Offset(offset int64) Option {
+func Offset(offset uint64) Option {
 	return func(options *Options) {
 		options.offset = offset
 	}
