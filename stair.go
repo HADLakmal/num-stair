@@ -22,12 +22,16 @@ type Handrail struct {
 type Stair struct {
 	End   *Step
 	Steps map[int64]*Step
+	StairOptions
 }
 
-func NewStair() *Stair {
-	return &Stair{
+func NewStair(options ...StairOption) *Stair {
+	stair := &Stair{
 		Steps: make(map[int64]*Step),
 	}
+	stair.StairOptions.apply(options...)
+
+	return stair
 }
 
 func (s *Stair) AddStep(name int64) bool {
@@ -57,7 +61,7 @@ func (s *Stair) AddBlock(stepName int64, block Block) bool {
 	if st, ok := s.Steps[stepName]; !ok {
 		return ok
 	} else {
-		if val := st.Handrail.Height.Add(block.Value); val.Float64() < 0 {
+		if val := st.Handrail.Height.Add(block.Value); val.Float64() < s.margin && block.Value.Float64() < 0 {
 			return false
 		} else {
 			st.Inputs = append(st.Inputs, block)
@@ -74,14 +78,14 @@ func (s *Stair) AddBlock(stepName int64, block Block) bool {
 
 func (s *Stair) PositionBlock(block Block, options ...Option) bool {
 	block.Options.apply(options...)
-	if s.End.Handrail.Height.Add(block.Value).Float64() < 0 {
+	if s.End.Handrail.Height.Add(block.Value).Float64() < s.margin {
 		return false
 	}
-	fitBlock(s.End, block)
+	fitBlock(s.End, block, s.margin)
 	return true
 }
 
-func fitBlock(step *Step, block Block) {
+func fitBlock(step *Step, block Block, margin float64) {
 	stepUpdate := func(step *Step) {
 		step.Inputs = append(step.Inputs, block)
 		step.Handrail.Height = step.Handrail.Height.Add(block.Value)
@@ -91,18 +95,13 @@ func fitBlock(step *Step, block Block) {
 			s = s.Previous
 		}
 	}
-	if step.Next == nil {
+	if step.Next == nil ||
+		step.Next.Handrail.Height.Add(block.Value).Float64() < margin ||
+		step.ID <= block.offset {
 		stepUpdate(step)
 		return
 	}
-	if step.Next.Handrail.Height.Add(block.Value).Float64() < 0 {
-		stepUpdate(step)
-		return
-	} else if step.ID <= block.offset {
-		stepUpdate(step)
-		return
-	}
-	fitBlock(step.Next, block)
+	fitBlock(step.Next, block, margin)
 }
 
 type Options struct {
@@ -117,6 +116,23 @@ func Offset(offset int64) Option {
 }
 
 func (opt *Options) apply(options ...Option) {
+	for _, option := range options {
+		option(opt)
+	}
+}
+
+type StairOptions struct {
+	margin float64
+}
+type StairOption func(*StairOptions)
+
+func Margin(offset float64) StairOption {
+	return func(options *StairOptions) {
+		options.margin = offset
+	}
+}
+
+func (opt *StairOptions) apply(options ...StairOption) {
 	for _, option := range options {
 		option(opt)
 	}
