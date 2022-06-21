@@ -44,7 +44,7 @@ func TestStair_AddBlock(t *testing.T) {
 				t.Errorf("step add fail")
 			}
 			if st.AddBlock(test.step, Block{
-				Value: gofloat.ToFloat(test.value, 2),
+				value: gofloat.ToFloat(test.value, 2),
 			}) == test.invalid {
 				t.Errorf("block add fail")
 			}
@@ -75,7 +75,7 @@ func TestStair_PositionBlock(t *testing.T) {
 				t.Errorf("step add fail")
 			}
 			if st.PositionBlock(Block{
-				Value: gofloat.ToFloat(test.value, 2),
+				value: gofloat.ToFloat(test.value, 2),
 			}) == test.invalid {
 				t.Errorf("block position fail")
 			}
@@ -83,21 +83,21 @@ func TestStair_PositionBlock(t *testing.T) {
 	}
 }
 
-func TestName(t *testing.T) {
+func Test_BlockFunction(t *testing.T) {
 	st := NewStair()
 	var step uint64 = 1
 	// add three steps
 	st.AddStep(step)
-	st.AddStep(step + 2)
-	st.AddStep(step + 4)
 
 	st.AddBlock(step, NewBlock(`block-1`, gofloat.ToFloat(20, 2)))
-	st.AddBlock(step+2, NewBlock(`block-2`, gofloat.ToFloat(20, 2)))
-	st.AddBlock(step+4, NewBlock(`block-3`, gofloat.ToFloat(20, 2)))
 
 	// block position in block-2
-	if st.PositionBlock(NewBlock(`position`, gofloat.ToFloat(-10, 2)), Offset(6)) {
-		// print block-2
+	if st.PositionBlock(NewBlock(`position`, gofloat.ToFloat(-10, 2)), StepFunction(func(step *Step) {
+		for i := range step.Inputs {
+			step.Inputs[i].ID = `position-fixed`
+		}
+	})) {
+		// print position-fixed
 		fmt.Println(st.Steps[step].Inputs[0].ID)
 	}
 }

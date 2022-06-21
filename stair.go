@@ -3,22 +3,22 @@ package number_stairs
 import "github.com/senpathi/gofloat"
 
 type Step struct {
-	ID             uint64
+	id             uint64
 	Inputs         []Block
 	Next, Previous *Step
-	Handrail       *Handrail
+	handrail       *Handrail
 }
 
 type Block struct {
 	ID string
 	Options
-	Value gofloat.Float
+	value gofloat.Float
 }
 
 func NewBlock(ID string, value gofloat.Float) Block {
 	return Block{
 		ID:    ID,
-		Value: value,
+		value: value,
 	}
 }
 
@@ -43,9 +43,9 @@ func NewStair(options ...StairOption) *Stair {
 
 func (s *Stair) AddStep(name uint64) bool {
 	step := &Step{
-		ID:       name,
+		id:       name,
 		Inputs:   *new([]Block),
-		Handrail: new(Handrail),
+		handrail: new(Handrail),
 	}
 	if _, ok := s.Steps[name]; ok || name <= 0 {
 		return false
@@ -54,7 +54,7 @@ func (s *Stair) AddStep(name uint64) bool {
 	if s.End == nil {
 		s.End = step
 	} else {
-		if s.End.ID > name {
+		if s.End.id > name {
 			return false
 		}
 		s.End.Previous = step
@@ -64,18 +64,22 @@ func (s *Stair) AddStep(name uint64) bool {
 	return true
 }
 
-func (s *Stair) AddBlock(stepName uint64, block Block) bool {
+func (s *Stair) AddBlock(stepName uint64, block Block, options ...Option) bool {
 	if st, ok := s.Steps[stepName]; !ok {
 		return ok
 	} else {
-		if val := st.Handrail.Height.Add(block.Value); val.Float64() < s.margin && block.Value.Float64() < 0 {
+		if val := st.handrail.Height.Add(block.value); val.Float64() < s.margin && block.value.Float64() < 0 {
 			return false
 		} else {
+			block.Options.apply(options...)
 			st.Inputs = append(st.Inputs, block)
-			st.Handrail.Height = st.Handrail.Height.Add(block.Value)
+			st.handrail.Height = st.handrail.Height.Add(block.value)
 			step := st.Previous
+			if block.fn != nil {
+				block.fn(st)
+			}
 			for step != nil {
-				step.Handrail.Height = step.Handrail.Height.Add(block.Value)
+				step.handrail.Height = step.handrail.Height.Add(block.value)
 				step = step.Previous
 			}
 			return ok
@@ -85,7 +89,7 @@ func (s *Stair) AddBlock(stepName uint64, block Block) bool {
 
 func (s *Stair) PositionBlock(block Block, options ...Option) bool {
 	block.Options.apply(options...)
-	if s.End.Handrail.Height.Add(block.Value).Float64() < s.margin {
+	if s.End.handrail.Height.Add(block.value).Float64() < s.margin {
 		return false
 	}
 	fitBlock(s.End, block, s.margin)
@@ -95,16 +99,19 @@ func (s *Stair) PositionBlock(block Block, options ...Option) bool {
 func fitBlock(step *Step, block Block, margin float64) {
 	stepUpdate := func(step *Step) {
 		step.Inputs = append(step.Inputs, block)
-		step.Handrail.Height = step.Handrail.Height.Add(block.Value)
+		step.handrail.Height = step.handrail.Height.Add(block.value)
 		s := step.Previous
+		if block.fn != nil {
+			block.fn(step)
+		}
 		for s != nil {
-			s.Handrail.Height = s.Handrail.Height.Add(block.Value)
+			s.handrail.Height = s.handrail.Height.Add(block.value)
 			s = s.Previous
 		}
 	}
 	if step.Next == nil ||
-		step.Next.Handrail.Height.Add(block.Value).Float64() < margin ||
-		step.ID <= block.offset {
+		step.Next.handrail.Height.Add(block.value).Float64() < margin ||
+		step.id <= block.offset {
 		stepUpdate(step)
 		return
 	}
@@ -113,12 +120,18 @@ func fitBlock(step *Step, block Block, margin float64) {
 
 type Options struct {
 	offset uint64
+	fn     func(step *Step)
 }
 type Option func(*Options)
 
 func Offset(offset uint64) Option {
 	return func(options *Options) {
 		options.offset = offset
+	}
+}
+func StepFunction(fn func(step *Step)) Option {
+	return func(options *Options) {
+		options.fn = fn
 	}
 }
 
