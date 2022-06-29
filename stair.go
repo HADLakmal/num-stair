@@ -9,6 +9,14 @@ type Step struct {
 	handrail       *Handrail
 }
 
+func (s *Step) ID() uint64 {
+	return s.id
+}
+
+func (s *Step) Height() gofloat.Float {
+	return s.handrail.Height
+}
+
 type Block struct {
 	ID string
 	Options
