@@ -101,3 +101,50 @@ func Test_BlockFunction(t *testing.T) {
 		fmt.Println(st.Steps[step].Inputs[0].ID)
 	}
 }
+
+func TestStair_PositionBlockCheck(t *testing.T) {
+	tests := map[string]struct {
+		steps      []uint64
+		stepValues []float64
+		value      float64
+		output     uint64
+	}{
+		`valid block`: {
+			steps:      []uint64{1},
+			stepValues: []float64{20},
+			value:      10,
+			output:     1,
+		},
+		`two steps`: {
+			steps:      []uint64{1, 2},
+			stepValues: []float64{5, 10},
+			value:      -5,
+			output:     1,
+		},
+		`first step with lower value`: {
+			steps:      []uint64{1, 2},
+			stepValues: []float64{3, 3},
+			value:      -5,
+			output:     2,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			st := NewStair()
+			for _, sp := range test.steps {
+				if !st.AddStep(sp) {
+					t.Errorf("step add fail")
+				}
+			}
+			for i, sp := range test.steps {
+				st.AddBlock(sp, NewBlock(fmt.Sprintf(`%d`, i), gofloat.ToFloat(test.stepValues[i], 2)))
+			}
+
+			if val, _ := st.PositionBlockCheck(Block{
+				value: gofloat.ToFloat(test.value, 2),
+			}); val != test.output {
+				t.Errorf("value got : %v, but expect : %v", val, test.output)
+			}
+		})
+	}
+}
