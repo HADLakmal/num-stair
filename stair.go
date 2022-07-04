@@ -95,16 +95,16 @@ func (s *Stair) AddBlock(stepName uint64, block Block, options ...Option) bool {
 	}
 }
 
-func (s *Stair) PositionBlock(block Block, options ...Option) bool {
+func (s *Stair) PositionBlock(block Block, options ...Option) (uint64, bool) {
 	block.Options.apply(options...)
 	if s.End.handrail.Height.Add(block.value).Float64() < s.margin {
-		return false
+		return 0, false
 	}
-	fitBlock(s.End, block, s.margin)
-	return true
+
+	return fitBlock(s.End, block, s.margin), true
 }
 
-func fitBlock(step *Step, block Block, margin float64) {
+func fitBlock(step *Step, block Block, margin float64) uint64 {
 	stepUpdate := func(step *Step) {
 		step.Inputs = append(step.Inputs, block)
 		step.handrail.Height = step.handrail.Height.Add(block.value)
@@ -121,9 +121,9 @@ func fitBlock(step *Step, block Block, margin float64) {
 		step.Next.handrail.Height.Add(block.value).Float64() < margin ||
 		step.id <= block.offset {
 		stepUpdate(step)
-		return
+		return step.id
 	}
-	fitBlock(step.Next, block, margin)
+	return fitBlock(step.Next, block, margin)
 }
 
 type Options struct {
