@@ -4,8 +4,6 @@ Number is consider as a weight of block which can be a positive or negative.
 Stair is built up from each number block. Block is fit into a single step of the stair
 and handrail height is depended on the weight of the step.
 
-#### Important
-**Block should be added after adding all the steps**
 
 ![Overview](/doc/overview.png)
 

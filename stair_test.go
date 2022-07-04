@@ -131,12 +131,10 @@ func TestStair_PositionBlockCheck(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			st := NewStair()
-			for _, sp := range test.steps {
+			for i, sp := range test.steps {
 				if !st.AddStep(sp) {
 					t.Errorf("step add fail")
 				}
-			}
-			for i, sp := range test.steps {
 				st.AddBlock(sp, NewBlock(fmt.Sprintf(`%d`, i), gofloat.ToFloat(test.stepValues[i], 2)))
 			}
 

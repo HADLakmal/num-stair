@@ -65,6 +65,7 @@ func (s *Stair) AddStep(name uint64) bool {
 		if s.End.id > name {
 			return false
 		}
+		step.handrail.Height = s.End.Height()
 		s.End.Previous = step
 		step.Next = s.End
 		s.End = step
