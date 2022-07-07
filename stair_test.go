@@ -146,3 +146,101 @@ func TestStair_PositionBlockCheck(t *testing.T) {
 		})
 	}
 }
+
+func TestStair_PositionBlockAttach(t *testing.T) {
+	tests := map[string]struct {
+		steps      []uint64
+		stepValues []float64
+		value      float64
+		offset     uint64
+		output     uint64
+	}{
+		`three steps with middle offset`: {
+			steps:      []uint64{1, 3, 6},
+			stepValues: []float64{5, 10, 15},
+			offset:     4,
+			value:      -5,
+			output:     3,
+		},
+		`three steps with last offset`: {
+			steps:      []uint64{1, 3, 6},
+			stepValues: []float64{5, 10, 15},
+			offset:     10,
+			value:      -5,
+			output:     6,
+		},
+		`three steps with first offset`: {
+			steps:      []uint64{2, 5, 10},
+			stepValues: []float64{5, 10, 15},
+			offset:     1,
+			value:      -5,
+			output:     2,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			st := NewStair()
+			for i, sp := range test.steps {
+				if !st.AddStep(sp) {
+					t.Errorf("step add fail")
+				}
+				st.AddBlock(sp, NewBlock(fmt.Sprintf(`%d`, i), gofloat.ToFloat(test.stepValues[i], 2)))
+			}
+
+			if val, _ := st.PositionBlock(Block{
+				value: gofloat.ToFloat(test.value, 2),
+			}, ValueAttach(test.offset), Offset(test.offset)); val != test.output {
+				t.Errorf("value got : %v, but expect : %v", val, test.output)
+			}
+		})
+	}
+}
+
+func TestStair_PositionBlockOffset(t *testing.T) {
+	tests := map[string]struct {
+		steps      []uint64
+		stepValues []float64
+		value      float64
+		offset     uint64
+		output     uint64
+	}{
+		`three steps with middle offset`: {
+			steps:      []uint64{1, 3, 6},
+			stepValues: []float64{5, 10, 15},
+			offset:     4,
+			value:      -5,
+			output:     3,
+		},
+		`three steps with last offset`: {
+			steps:      []uint64{1, 3, 6},
+			stepValues: []float64{5, 10, 15},
+			offset:     10,
+			value:      -5,
+			output:     6,
+		},
+		`three steps with first offset`: {
+			steps:      []uint64{2, 5, 10},
+			stepValues: []float64{5, 10, 15},
+			offset:     1,
+			value:      -5,
+			output:     2,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			st := NewStair()
+			for i, sp := range test.steps {
+				if !st.AddStep(sp) {
+					t.Errorf("step add fail")
+				}
+				st.AddBlock(sp, NewBlock(fmt.Sprintf(`%d`, i), gofloat.ToFloat(test.stepValues[i], 2)))
+			}
+
+			if val, _ := st.PositionBlockCheck(Block{
+				value: gofloat.ToFloat(test.value, 2),
+			}, Offset(test.offset)); val != test.output {
+				t.Errorf("value got : %v, but expect : %v", val, test.output)
+			}
+		})
+	}
+}

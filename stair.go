@@ -141,6 +141,7 @@ func fitBlock(step *Step, block Block, margin float64, debug bool) (stepID uint6
 
 type Options struct {
 	offset uint64
+	attach interface{}
 	fn     func(step *Step)
 }
 type Option func(*Options)
@@ -150,6 +151,13 @@ func Offset(offset uint64) Option {
 		options.offset = offset
 	}
 }
+
+func ValueAttach(attach interface{}) Option {
+	return func(options *Options) {
+		options.attach = attach
+	}
+}
+
 func StepFunction(fn func(step *Step)) Option {
 	return func(options *Options) {
 		options.fn = fn
