@@ -146,6 +146,10 @@ type Options struct {
 }
 type Option func(*Options)
 
+func (opt *Options) GetAttachValue() interface{} {
+	return opt.attach
+}
+
 func Offset(offset uint64) Option {
 	return func(options *Options) {
 		options.offset = offset
