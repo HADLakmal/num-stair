@@ -143,3 +143,7 @@ func fitBlock(step *Step, block Block, margin float64, debug bool) (stepID uint6
 func (s *Stair) GetSteps() map[uint64]*Step {
 	return s.Steps
 }
+
+func (s *Stair) GetEndStep() *Step {
+	return s.End
+}

@@ -6,6 +6,7 @@ type StairCase interface {
 	PositionBlock(block Block, options ...Option) (stepID uint64, ok bool)
 	PositionBlockCheck(block Block, options ...Option) (stepID uint64, ok bool)
 	GetSteps() map[uint64]*Step
+	GetEndStep() *Step
 	StairCaseOption
 }
 
