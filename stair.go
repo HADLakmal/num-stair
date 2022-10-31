@@ -37,14 +37,15 @@ type Handrail struct {
 type Stair struct {
 	End   *Step
 	Steps map[uint64]*Step
-	StairOptions
+	StairCaseOption
 }
 
-func NewStair(options ...StairOption) *Stair {
+func NewStair(options ...StairOption) StairCase {
 	stair := &Stair{
-		Steps: make(map[uint64]*Step),
+		Steps:           make(map[uint64]*Step),
+		StairCaseOption: new(StairOptions),
 	}
-	stair.StairOptions.apply(options...)
+	stair.Apply(options...)
 
 	return stair
 }
@@ -77,7 +78,7 @@ func (s *Stair) AddBlock(stepName uint64, block Block, options ...Option) bool {
 	if st, ok := s.Steps[stepName]; !ok {
 		return ok
 	} else {
-		if val := st.handrail.Height.Add(block.value); val.Float64() < s.margin && block.value.Float64() < 0 {
+		if val := st.handrail.Height.Add(block.value); val.Float64() < s.GetMargin() && block.value.Float64() < 0 {
 			return false
 		} else {
 			block.Options.apply(options...)
@@ -98,20 +99,20 @@ func (s *Stair) AddBlock(stepName uint64, block Block, options ...Option) bool {
 
 func (s *Stair) PositionBlock(block Block, options ...Option) (stepID uint64, ok bool) {
 	block.Options.apply(options...)
-	if s.End.handrail.Height.Add(block.value).Float64() < s.margin {
+	if s.End.handrail.Height.Add(block.value).Float64() < s.GetMargin() {
 		return 0, false
 	}
 
-	return fitBlock(s.End, block, s.margin, false), true
+	return fitBlock(s.End, block, s.GetMargin(), false), true
 }
 
 func (s *Stair) PositionBlockCheck(block Block, options ...Option) (stepID uint64, ok bool) {
 	block.Options.apply(options...)
-	if s.End.handrail.Height.Add(block.value).Float64() < s.margin {
+	if s.End.handrail.Height.Add(block.value).Float64() < s.GetMargin() {
 		return 0, false
 	}
 
-	return fitBlock(s.End, block, s.margin, true), true
+	return fitBlock(s.End, block, s.GetMargin(), true), true
 }
 
 func fitBlock(step *Step, block Block, margin float64, debug bool) (stepID uint64) {
@@ -139,54 +140,6 @@ func fitBlock(step *Step, block Block, margin float64, debug bool) (stepID uint6
 	return fitBlock(step.Next, block, margin, debug)
 }
 
-type Options struct {
-	offset uint64
-	attach interface{}
-	fn     func(step *Step)
-}
-type Option func(*Options)
-
-func (opt *Options) GetAttachValue() interface{} {
-	return opt.attach
-}
-
-func Offset(offset uint64) Option {
-	return func(options *Options) {
-		options.offset = offset
-	}
-}
-
-func ValueAttach(attach interface{}) Option {
-	return func(options *Options) {
-		options.attach = attach
-	}
-}
-
-func StepFunction(fn func(step *Step)) Option {
-	return func(options *Options) {
-		options.fn = fn
-	}
-}
-
-func (opt *Options) apply(options ...Option) {
-	for _, option := range options {
-		option(opt)
-	}
-}
-
-type StairOptions struct {
-	margin float64
-}
-type StairOption func(*StairOptions)
-
-func Margin(offset float64) StairOption {
-	return func(options *StairOptions) {
-		options.margin = offset
-	}
-}
-
-func (opt *StairOptions) apply(options ...StairOption) {
-	for _, option := range options {
-		option(opt)
-	}
+func (s *Stair) GetSteps() map[uint64]*Step {
+	return s.Steps
 }

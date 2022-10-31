@@ -6,7 +6,7 @@ and handrail height is depended on the weight of the step.
 
 
 ![Overview](/doc/overview.png)
-
+StepCase
 Library is capable of,
 
 * Build steps with integer name

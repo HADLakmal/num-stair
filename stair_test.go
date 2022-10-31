@@ -16,7 +16,7 @@ func TestNewStair(t *testing.T) {
 func TestNewStairMargin(t *testing.T) {
 	margin := 10.0
 	st := NewStair(Margin(margin))
-	if !st.AddStep(1) && st.margin != margin {
+	if !st.AddStep(1) && st.GetMargin() != margin {
 		t.Errorf("step add fail")
 	}
 }
@@ -98,7 +98,7 @@ func Test_BlockFunction(t *testing.T) {
 		}
 	})); ok {
 		// print position-fixed
-		fmt.Println(st.Steps[step].Inputs[0].ID)
+		fmt.Println(st.GetSteps()[step].Inputs[0].ID)
 	}
 }
 
